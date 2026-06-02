@@ -19,7 +19,7 @@ main.Position = UDim2.new(0, 0, 0, 0)
 main.AnchorPoint = Vector2.new(0, 0)
 main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 main.BorderSizePixel = 0
-main.ZIndex = 1
+main.ZIndex = 10
 main.Parent = screenGui
 
 -- 🟣 Gradiente de fondo NEGRO → PÚRPURA OSCURO (como en la imagen)

@@ -1,11 +1,13 @@
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- ScreenGui
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "load"
+screenGui.Name = "LoadScreen"
 screenGui.ResetOnSpawn = false
 screenGui.DisplayOrder = 999
 screenGui.IgnoreGuiInset = true
@@ -16,19 +18,17 @@ screenGui.Parent = playerGui
 local main = Instance.new("Frame")
 main.Name = "Main"
 main.Size = UDim2.new(1, 0, 1, 0)
-main.Position = UDim2.new(0, 0, 0, 0)
-main.AnchorPoint = Vector2.new(0, 0)
 main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 main.BorderSizePixel = 0
 main.ZIndex = 1
 main.Parent = screenGui
 
--- Gradiente vertical
+-- Gradiente
 local gradient = Instance.new("UIGradient")
 gradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0,   Color3.fromRGB(0, 0, 0)),
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
     ColorSequenceKeypoint.new(0.5, Color3.fromRGB(26, 77, 62)),
-    ColorSequenceKeypoint.new(1,   Color3.fromRGB(10, 31, 24))
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 31, 24))
 })
 gradient.Rotation = 90
 gradient.Parent = main
@@ -36,96 +36,96 @@ gradient.Parent = main
 -- TextLabel
 local textLabel = Instance.new("TextLabel")
 textLabel.Name = "Text"
-textLabel.Size = UDim2.new(0.6, 0, 0.08, 0)
+textLabel.Size = UDim2.new(0.8, 0, 0.1, 0)
 textLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
 textLabel.AnchorPoint = Vector2.new(0.5, 0.5)
 textLabel.BackgroundTransparency = 1
-textLabel.BorderSizePixel = 0
 textLabel.Text = "The best Keyless hub"
-textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)  -- ✅ corregido
+textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 textLabel.TextScaled = true
 textLabel.Font = Enum.Font.BuilderSansBold
 textLabel.TextTransparency = 1
 textLabel.ZIndex = 2
 textLabel.Parent = main
 
--- Textos rotatorios
+-- Textos a rotar
 local textos = {
     "The best Keyless hub",
     "Use your hub without key",
-    "Fastly and safe"
+    "Fast, safe and reliable"
 }
 
-local index = 1
-local animando = false
-local duracion = 0.4
-local posOriginal = textLabel.Position
+local currentIndex = 1
+local isAnimating = false
+local tweenDuration = 0.4
+local originalPos = textLabel.Position
 
-local function cambiarTexto()
-    if animando then return end
-    animando = true
+local function changeText()
+    if isAnimating then return end
+    isAnimating = true
 
-    -- Salida: baja y desaparece
-    local salida = TweenService:Create(textLabel, TweenInfo.new(duracion / 2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+    -- Salida
+    local tweenOut = TweenService:Create(textLabel, TweenInfo.new(tweenDuration/2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
         TextTransparency = 1,
-        Position = UDim2.new(posOriginal.X.Scale, posOriginal.X.Offset, posOriginal.Y.Scale + 0.025, posOriginal.Y.Offset)
+        Position = UDim2.new(originalPos.X.Scale, originalPos.X.Offset, originalPos.Y.Scale + 0.04, originalPos.Y.Offset)
     })
-    salida:Play()
-    salida.Completed:Wait()
+    tweenOut:Play()
+    tweenOut.Completed:Wait()
 
-    -- Cambiar texto y reposicionar arriba
-    index = (index % #textos) + 1
-    textLabel.Text = textos[index]
-    textLabel.Position = UDim2.new(posOriginal.X.Scale, posOriginal.X.Offset, posOriginal.Y.Scale - 0.025, posOriginal.Y.Offset)
+    -- Cambiar texto
+    currentIndex = (currentIndex % #textos) + 1
+    textLabel.Text = textos[currentIndex]
+    textLabel.Position = UDim2.new(originalPos.X.Scale, originalPos.X.Offset, originalPos.Y.Scale - 0.04, originalPos.Y.Offset)
     textLabel.TextTransparency = 1
 
-    -- Entrada: baja hasta posición original y aparece
-    local entrada = TweenService:Create(textLabel, TweenInfo.new(duracion / 2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+    -- Entrada
+    local tweenIn = TweenService:Create(textLabel, TweenInfo.new(tweenDuration/2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
         TextTransparency = 0,
-        Position = posOriginal
+        Position = originalPos
     })
-    entrada:Play()
-    entrada.Completed:Wait()
+    tweenIn:Play()
+    tweenIn.Completed:Wait()
 
-    animando = false
+    isAnimating = false
 end
 
--- Fade in inicial del texto
-TweenService:Create(textLabel, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+-- Animación inicial
+TweenService:Create(textLabel, TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
     TextTransparency = 0
 }):Play()
 
-task.wait(1)
+task.wait(1.2)
 
--- Ciclar por todos los textos
-for _ = 1, #textos - 1 do
-    task.wait(1.8)
-    cambiarTexto()
+-- Ciclo de textos
+for i = 1, #textos - 1 do
+    task.wait(1.7)
+    changeText()
 end
 
-task.wait(1.8)
+task.wait(1.6)
 
--- Fade out: texto Y frame
-TweenService:Create(textLabel, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-    TextTransparency = 1
-}):Play()
+-- Fade out final
+local fadeText = TweenService:Create(textLabel, TweenInfo.new(0.5, Enum.EasingStyle.Quad), { TextTransparency = 1 })
+local fadeMain = TweenService:Create(main, TweenInfo.new(0.6, Enum.EasingStyle.Quad), { BackgroundTransparency = 1 })
 
-local fadeOut = TweenService:Create(main, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-    BackgroundTransparency = 1
-})
-fadeOut:Play()
-fadeOut.Completed:Wait()
+fadeText:Play()
+fadeMain:Play()
 
--- Cargar repositorio
+fadeMain.Completed:Wait()
+
+-- Cargar script
 local url = "https://raw.githubusercontent.com/overthcode2011-stack/HHB9/refs/heads/main/main"
-local success, result = pcall(function()
-    loadstring(game:HttpGet(url))()
+
+local success, err = pcall(function()
+    local response = game:HttpGet(url)
+    loadstring(response)()
 end)
 
 if success then
-    print(" # Repositorio cargado correctamente.")
+    print("✅ Hub cargado correctamente")
 else
-    warn("# Error al cargar el repositorio:", result)
+    warn("❌ Error al cargar el hub:", err)
 end
 
-screenGui:Destroy()  -- ✅ paréntesis corregido
+-- Limpiar
+screenGui:Destroy()

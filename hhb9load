@@ -1,131 +1,29 @@
-local TweenService = game:GetService("TweenService")
-local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
+local function cambiarTexto()
+    if animando then return end
+    animando = true
+    local currentPos = textLabel.Position -- Save current position
 
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-
--- ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "LoadScreen"
-screenGui.ResetOnSpawn = false
-screenGui.DisplayOrder = 999
-screenGui.IgnoreGuiInset = true
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-screenGui.Parent = playerGui
-
--- Frame principal
-local main = Instance.new("Frame")
-main.Name = "Main"
-main.Size = UDim2.new(1, 0, 1, 0)
-main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-main.BorderSizePixel = 0
-main.ZIndex = 1
-main.Parent = screenGui
-
--- Gradiente
-local gradient = Instance.new("UIGradient")
-gradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(26, 77, 62)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 31, 24))
-})
-gradient.Rotation = 90
-gradient.Parent = main
-
--- TextLabel
-local textLabel = Instance.new("TextLabel")
-textLabel.Name = "Text"
-textLabel.Size = UDim2.new(0.8, 0, 0.1, 0)
-textLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
-textLabel.AnchorPoint = Vector2.new(0.5, 0.5)
-textLabel.BackgroundTransparency = 1
-textLabel.Text = "The best Keyless hub"
-textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-textLabel.TextScaled = true
-textLabel.Font = Enum.Font.BuilderSansBold
-textLabel.TextTransparency = 1
-textLabel.ZIndex = 2
-textLabel.Parent = main
-
--- Textos a rotar
-local textos = {
-    "The best Keyless hub",
-    "Use your hub without key",
-    "Fast, safe and reliable"
-}
-
-local currentIndex = 1
-local isAnimating = false
-local tweenDuration = 0.4
-local originalPos = textLabel.Position
-
-local function changeText()
-    if isAnimating then return end
-    isAnimating = true
-
-    -- Salida
-    local tweenOut = TweenService:Create(textLabel, TweenInfo.new(tweenDuration/2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+    -- Fade out to bottom
+    local salida = TweenService:Create(textLabel, TweenInfo.new(duracion / 2), {
         TextTransparency = 1,
-        Position = UDim2.new(originalPos.X.Scale, originalPos.X.Offset, originalPos.Y.Scale + 0.04, originalPos.Y.Offset)
+        Position = UDim2.new(currentPos.X.Scale, currentPos.X.Offset, currentPos.Y.Scale + 0.025, currentPos.Y.Offset)
     })
-    tweenOut:Play()
-    tweenOut.Completed:Wait()
+    salida:Play()
+    salida.Completed:Wait()
 
-    -- Cambiar texto
-    currentIndex = (currentIndex % #textos) + 1
-    textLabel.Text = textos[currentIndex]
-    textLabel.Position = UDim2.new(originalPos.X.Scale, originalPos.X.Offset, originalPos.Y.Scale - 0.04, originalPos.Y.Offset)
+    -- Change text and move slightly above
+    index = (index % #textos) + 1
+    textLabel.Text = textos[index]
+    textLabel.Position = UDim2.new(currentPos.X.Scale, currentPos.X.Offset, currentPos.Y.Scale - 0.025, currentPos.Y.Offset)
     textLabel.TextTransparency = 1
 
-    -- Entrada
-    local tweenIn = TweenService:Create(textLabel, TweenInfo.new(tweenDuration/2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+    -- Fade in to original position
+    local entrada = TweenService:Create(textLabel, TweenInfo.new(duracion / 2), {
         TextTransparency = 0,
-        Position = originalPos
+        Position = currentPos
     })
-    tweenIn:Play()
-    tweenIn.Completed:Wait()
+    entrada:Play()
+    entrada.Completed:Wait()
 
-    isAnimating = false
+    animando = false
 end
-
--- Animación inicial
-TweenService:Create(textLabel, TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-    TextTransparency = 0
-}):Play()
-
-task.wait(1.2)
-
--- Ciclo de textos
-for i = 1, #textos - 1 do
-    task.wait(1.7)
-    changeText()
-end
-
-task.wait(1.6)
-
--- Fade out final
-local fadeText = TweenService:Create(textLabel, TweenInfo.new(0.5, Enum.EasingStyle.Quad), { TextTransparency = 1 })
-local fadeMain = TweenService:Create(main, TweenInfo.new(0.6, Enum.EasingStyle.Quad), { BackgroundTransparency = 1 })
-
-fadeText:Play()
-fadeMain:Play()
-
-fadeMain.Completed:Wait()
-
--- Cargar script
-local url = "https://raw.githubusercontent.com/overthcode2011-stack/HHB9/refs/heads/main/main"
-
-local success, err = pcall(function()
-    local response = game:HttpGet(url)
-    loadstring(response)()
-end)
-
-if success then
-    print("✅ Hub cargado correctamente")
-else
-    warn("❌ Error al cargar el hub:", err)
-end
-
--- Limpiar
-screenGui:Destroy()

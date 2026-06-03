@@ -7,9 +7,11 @@ local playerGui = player:WaitForChild("PlayerGui")
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "load"
 screenGui.ResetOnSpawn = false
+screenGui.DisplayOrder = 999  -- ✅ Por encima de todas las otras GUIs
 screenGui.IgnoreGuiInset = true
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = playerGui
+
 
 -- Frame principal
 local main = Instance.new("Frame")
@@ -19,41 +21,35 @@ main.Position = UDim2.new(0, 0, 0, 0)
 main.AnchorPoint = Vector2.new(0, 0)
 main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 main.BorderSizePixel = 0
-main.ZIndex = 10
+main.ZIndex = 1
 main.Parent = screenGui
 
--- 🟣 Gradiente de fondo NEGRO → PÚRPURA OSCURO (como en la imagen)
+-- ✅ UIGradient como hijo directo de Main (vertical)
 local gradient = Instance.new("UIGradient")
 gradient.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),         -- Negro arriba
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 10, 50))       -- Púrpura oscuro abajo
+	ColorSequenceKeypoint.new(0,   Color3.fromRGB(0, 0, 0)),       -- Negro arriba
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(26, 77, 62)),    -- Verde agua oscuro
+	ColorSequenceKeypoint.new(1,   Color3.fromRGB(10, 31, 24))     -- Verde casi negro abajo
 })
-gradient.Rotation = 0  -- Gradiente vertical (de arriba a abajo)
-gradient.Parent = main
+gradient.Rotation = 90  -- ✅ CORREGIDO: 90° = vertical (arriba → abajo)
+gradient.Parent = main  -- ✅ Hijo de Main
 
--- TextLabel (centrado en el medio)
+-- TextLabel centrado
 local textLabel = Instance.new("TextLabel")
 textLabel.Name = "Text"
 textLabel.Size = UDim2.new(0.6, 0, 0.08, 0)
-textLabel.Position = UDim2.new(0.5, 0, 0.5, 0)   -- CENTRADO
+textLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
 textLabel.AnchorPoint = Vector2.new(0.5, 0.5)
 textLabel.BackgroundTransparency = 1
+textLabel.BorderSizePixel = 0 
 textLabel.Text = "The best Keyless hub"
-textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+textLabel.TextColor3 = Color3.fromRGB(400,400,400)
 textLabel.TextScaled = true
-textLabel.Font = Enum.Font.GothamBold
-textLabel.TextTransparency = 0
+textLabel.Font = Enum.Font.BuilderSansBold
+textLabel.TextTransparency = 1  -- empieza invisible para el fade in
 textLabel.ZIndex = 2
 textLabel.Parent = main
 
--- Gradiente en el texto (opcional, para darle un toque sutil)
-local textGradient = Instance.new("UIGradient")
-textGradient.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 200, 255)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)),
-})
-textGradient.Rotation = 90
-textGradient.Parent = textLabel
 
 -- Textos a rotar
 local textos = {
@@ -71,7 +67,7 @@ local function cambiarTexto()
 	if animando then return end
 	animando = true
 
-	-- Salida
+	-- Salida: baja y desaparece
 	local salida = TweenService:Create(textLabel, TweenInfo.new(duracion / 2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 		TextTransparency = 1,
 		Position = UDim2.new(posOriginal.X.Scale, posOriginal.X.Offset, posOriginal.Y.Scale + 0.025, posOriginal.Y.Offset)
@@ -79,13 +75,13 @@ local function cambiarTexto()
 	salida:Play()
 	salida.Completed:Wait()
 
-	-- Cambiar
+	-- Cambiar texto y reposicionar arriba
 	index = (index % #textos) + 1
 	textLabel.Text = textos[index]
 	textLabel.Position = UDim2.new(posOriginal.X.Scale, posOriginal.X.Offset, posOriginal.Y.Scale - 0.025, posOriginal.Y.Offset)
 	textLabel.TextTransparency = 1
 
-	-- Entrada
+	-- Entrada: baja hasta posición original y aparece
 	local entrada = TweenService:Create(textLabel, TweenInfo.new(duracion / 2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 		TextTransparency = 0,
 		Position = posOriginal
@@ -96,44 +92,42 @@ local function cambiarTexto()
 	animando = false
 end
 
--- Fade in inicial
-textLabel.TextTransparency = 1
+-- Fade in inicial del texto
 TweenService:Create(textLabel, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 	TextTransparency = 0
 }):Play()
 
 task.wait(1)
 
--- Ciclar textos (se muestran todos una vez)
+-- Ciclar por todos los textos
 for _ = 1, #textos - 1 do
 	task.wait(1.8)
 	cambiarTexto()
 end
 
--- ⏳ Esperar un poco antes de cargar el repositorio
 task.wait(1.8)
 
--- 🔽 Fade out del frame completo
-local fadeOut = TweenService:Create(main, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-	BackgroundTransparency = 1
-})
+-- ✅ Fade out: texto Y frame (con BackgroundTransparency para ocultar el gradiente)
 TweenService:Create(textLabel, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 	TextTransparency = 1
 }):Play()
+
+local fadeOut = TweenService:Create(main, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+	BackgroundTransparency = 1
+})
 fadeOut:Play()
 fadeOut.Completed:Wait()
 
--- 🚀 Cargar el repositorio (loadstring)
+-- Cargar repositorio
 local url = "https://raw.githubusercontent.com/overthcode2011-stack/HHB9/refs/heads/main/main"
 local success, result = pcall(function()
 	loadstring(game:HttpGet(url))()
 end)
 
 if success then
-	print("✅ Repositorio cargado correctamente.")
+	print(" # Repositorio cargado correctamente.")
 else
-	warn("❌ Error al cargar el repositorio:", result)
+	warn("# Error al cargar el repositorio:", result)
 end
 
--- Destruir la GUI de carga
-screenGui:Destroy()
+screenGui:Destroy())

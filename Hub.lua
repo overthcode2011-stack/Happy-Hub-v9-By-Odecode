@@ -160,7 +160,7 @@ end
 --[[ Configuration ]]
 local PANEL_TRANSPARENCY = 0.75
 local CARD_TRANSPARENCY = 1
-local ICON_ID            = "rbxassetid://125716871945612"
+local ICON_ID            = "rbxassetid://104348663064077"
 local CLOSE_ICON_ID      = "rbxassetid://10844111750"
 local ADD_WP_ICON_ID     = "rbxassetid://117786081881229"
 
@@ -398,14 +398,14 @@ screenGui.Parent = playerGui
 
 local panel = Instance.new("Frame")
 panel.Name = "MainPanel"
-panel.Size = UDim2.new(0.92,0,0.84,0)
-panel.Position = UDim2.new(0.04,0,0.08,0)
+panel.Size = UDim2.new(0.4,0,0.55,0)
+panel.Position = UDim2.new(0.05,0,0.05,0)
 panel.BackgroundColor3 = T().bg
 panel.BackgroundTransparency = PANEL_TRANSPARENCY
 panel.BorderSizePixel = 0
 panel.Visible = false
 panel.Parent = screenGui
-styleCorner(panel, UDim.new(0,16))
+styleCorner(panel, UDim.new(0.015,0))
 styleStroke(panel, 0.72)
 table.insert(reg.panels, panel)
 
@@ -2083,9 +2083,9 @@ local tweenInfoOut = TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDire
 
 local function openGui()
 	panel.Visible = true
-	panel.Position = UDim2.new(0.04,0,1.1,0)
+	panel.Position = UDim2.new(0.5,0,0.5,0)
 	panel.BackgroundTransparency = 0.5
-	panelScale.Scale = 0.92
+	panelScale.Scale = 0.5
 	TweenService:Create(panel, tweenInfo, {
 		Position = UDim2.new(0.04,0,0.08,0),
 		BackgroundTransparency = PANEL_TRANSPARENCY,
@@ -2095,7 +2095,7 @@ end
 
 local function closeGui()
 	local tw = TweenService:Create(panel, tweenInfoOut, {
-		Position = UDim2.new(0.04,0,1.1,0),
+		Position = UDim2.new(1.5,0,0.5,0),
 		BackgroundTransparency = 0.5,
 	})
 	tw:Play()
@@ -2107,7 +2107,7 @@ closeBtn.MouseButton1Click:Connect(closeGui)
 
 UserInputService.InputBegan:Connect(function(inp, processed)
 	if processed then return end
-	if inp.KeyCode == Enum.KeyCode.RightShift then
+	if inp.KeyCode == Enum.KeyCode.F3 then
 		if panel.Visible then closeGui() else openGui() end
 	end
 end)
@@ -2132,7 +2132,7 @@ table.insert(reg.panels, toggle)
 toggleBtn = toggle
 
 local dragging, wasDragged, dragInput, dragStart, startPos = false, false, nil, nil, nil
-local DRAG_THRESHOLD = 12
+local DRAG_THRESHOLD = 10
 
 toggle.InputBegan:Connect(function(inp)
 	if inp.UserInputType == Enum.UserInputType.Touch
